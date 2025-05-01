@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,20 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Pollen-specific colors
+				nature: {
+					'50': '#f2f9f0',
+					'100': '#e1f1dd',
+					'200': '#c4e3bf',
+					'300': '#97cd92',
+					'400': '#71b363',
+					'500': '#4c9440',
+					'600': '#3b7832',
+					'700': '#30602a',
+					'800': '#294c25',
+					'900': '#234021',
+					'950': '#0e2310',
 				}
 			},
 			borderRadius: {
