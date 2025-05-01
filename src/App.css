@@ -53,3 +53,21 @@
 .bg-gradient-overlay {
   background: linear-gradient(to bottom right, rgba(167, 243, 208, 0.2), rgba(253, 230, 138, 0.2));
 }
+
+/* Arabic text styles */
+[dir="rtl"] {
+  text-align: right;
+  font-family: 'Amiri', 'Noto Sans Arabic', sans-serif;
+}
+
+.arabic-text {
+  font-family: 'Amiri', 'Noto Sans Arabic', sans-serif;
+  text-align: right;
+}
+
+/* In case direction is not properly applied */
+input[name="arabicName"], 
+.arabic-name {
+  direction: rtl;
+  text-align: right;
+}

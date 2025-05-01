@@ -22,13 +22,17 @@ const PollenCard: React.FC<PollenCardProps> = ({ pollen }) => {
   const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 0.25, 1));
   const resetZoom = () => setZoomLevel(1);
 
+  const handleImageChange = (index: number) => {
+    setCurrentImageIndex(index);
+  };
+
   return (
     <Card className="overflow-hidden transition-all duration-300 pollen-card">
       <div className="aspect-square relative overflow-hidden">
         <Dialog onOpenChange={resetZoom}>
           <DialogTrigger asChild>
             <img 
-              src={imageUrl} 
+              src={pollen.images?.[currentImageIndex] || imageUrl} 
               alt={pollen.species} 
               className="w-full h-full object-cover cursor-pointer hover:brightness-90 transition-all"
             />
@@ -66,8 +70,9 @@ const PollenCard: React.FC<PollenCardProps> = ({ pollen }) => {
                   <div className="p-1 h-16 aspect-square">
                     <img 
                       src={image} 
-                      alt={`${pollen.species} ${index + 1}`} 
-                      className={`h-full w-full rounded-md object-cover border-2 cursor-pointer ${index === 0 ? 'border-primary' : 'border-transparent'}`}
+                      alt={`${pollen.species} ${index + 1}`}
+                      onClick={() => handleImageChange(index)}
+                      className={`h-full w-full rounded-md object-cover border-2 cursor-pointer ${currentImageIndex === index ? 'border-primary' : 'border-transparent hover:border-muted'}`}
                     />
                   </div>
                 </CarouselItem>
@@ -84,7 +89,7 @@ const PollenCard: React.FC<PollenCardProps> = ({ pollen }) => {
         <div className="flex flex-wrap gap-2 items-center">
           <p className="text-sm text-muted-foreground italic">{pollen.latinName}</p>
           {pollen.arabicName && (
-            <p className="text-sm text-muted-foreground" dir="rtl">{pollen.arabicName}</p>
+            <p className="text-sm text-muted-foreground font-medium" dir="rtl">{pollen.arabicName}</p>
           )}
         </div>
       </CardHeader>

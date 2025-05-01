@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { usePollen } from '@/context/PollenContext';
@@ -67,7 +66,7 @@ const PollenDetailPage: React.FC = () => {
           <h1 className="text-3xl font-bold">{pollen.species}</h1>
           <p className="text-xl text-muted-foreground italic">{pollen.latinName}</p>
           {pollen.arabicName && (
-            <p className="text-lg text-muted-foreground font-semibold" dir="rtl">{pollen.arabicName}</p>
+            <p className="text-lg text-muted-foreground font-semibold arabic-name" dir="rtl">{pollen.arabicName}</p>
           )}
         </div>
         

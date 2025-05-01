@@ -84,6 +84,7 @@ export const PollenProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const searchTerm = filter.toLowerCase();
     return (
       pollen.latinName.toLowerCase().includes(searchTerm) ||
+      (pollen.arabicName && pollen.arabicName.includes(searchTerm)) || // Added Arabic name search
       pollen.species.toLowerCase().includes(searchTerm) ||
       pollen.family.toLowerCase().includes(searchTerm) ||
       pollen.plantOrigin.toLowerCase().includes(searchTerm)

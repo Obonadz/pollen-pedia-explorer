@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
@@ -148,6 +147,7 @@ const PollenFormPage: React.FC = () => {
                       onChange={handleChange}
                       placeholder="e.g., عباد الشمس"
                       dir="rtl"
+                      className="text-right"
                     />
                   </div>
                   
