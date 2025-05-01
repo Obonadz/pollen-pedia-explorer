@@ -20,6 +20,7 @@ const PollenFormPage: React.FC = () => {
   
   const [form, setForm] = useState({
     latinName: existingPollen?.latinName || '',
+    arabicName: existingPollen?.arabicName || '',
     species: existingPollen?.species || '',
     family: existingPollen?.family || '',
     plantOrigin: existingPollen?.plantOrigin || '',
@@ -69,6 +70,7 @@ const PollenFormPage: React.FC = () => {
     try {
       const pollenData = {
         latinName: form.latinName,
+        arabicName: form.arabicName,
         species: form.species,
         family: form.family,
         plantOrigin: form.plantOrigin,
@@ -138,6 +140,18 @@ const PollenFormPage: React.FC = () => {
                   </div>
                   
                   <div className="space-y-2">
+                    <Label htmlFor="arabicName">Arabic Name</Label>
+                    <Input
+                      id="arabicName"
+                      name="arabicName"
+                      value={form.arabicName}
+                      onChange={handleChange}
+                      placeholder="e.g., عباد الشمس"
+                      dir="rtl"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
                     <Label htmlFor="species">Species Name *</Label>
                     <Input
                       id="species"
@@ -168,7 +182,7 @@ const PollenFormPage: React.FC = () => {
                       name="plantOrigin"
                       value={form.plantOrigin}
                       onChange={handleChange}
-                      placeholder="e.g., North America"
+                      placeholder="e.g., Dubai, Abu Dhabi, Sharjah"
                       required
                     />
                   </div>

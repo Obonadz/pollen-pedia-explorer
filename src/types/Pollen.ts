@@ -2,6 +2,7 @@
 export interface Pollen {
   id: string;
   latinName: string;
+  arabicName?: string; // Added Arabic name field
   species: string;
   family: string;
   plantOrigin: string;
@@ -23,6 +24,7 @@ export const samplePollens: Pollen[] = [
   {
     id: '1',
     latinName: 'Helianthus annuus',
+    arabicName: 'عباد الشمس',
     species: 'Sunflower',
     family: 'Asteraceae',
     plantOrigin: 'North America',
@@ -41,6 +43,7 @@ export const samplePollens: Pollen[] = [
   {
     id: '2',
     latinName: 'Pinus sylvestris',
+    arabicName: 'الصنوبر الاسكتلندي',
     species: 'Scots pine',
     family: 'Pinaceae',
     plantOrigin: 'Eurasia',
@@ -58,6 +61,7 @@ export const samplePollens: Pollen[] = [
   {
     id: '3',
     latinName: 'Betula pendula',
+    arabicName: 'البتولا الفضية',
     species: 'Silver birch',
     family: 'Betulaceae',
     plantOrigin: 'Europe',

@@ -24,7 +24,12 @@ const PollenCard: React.FC<PollenCardProps> = ({ pollen }) => {
       </div>
       <CardHeader className="p-4 pb-0">
         <h3 className="font-medium text-lg">{pollen.species}</h3>
-        <p className="text-sm text-muted-foreground italic">{pollen.latinName}</p>
+        <div className="flex flex-wrap gap-2 items-center">
+          <p className="text-sm text-muted-foreground italic">{pollen.latinName}</p>
+          {pollen.arabicName && (
+            <p className="text-sm text-muted-foreground" dir="rtl">{pollen.arabicName}</p>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="p-4 pt-2">
         <p className="text-sm"><span className="font-medium">Family:</span> {pollen.family}</p>

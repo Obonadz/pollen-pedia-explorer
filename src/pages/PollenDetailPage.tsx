@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Edit, Plus } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import UAEMap from '@/components/map/UAEMap';
 
 const PollenDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -53,6 +54,9 @@ const PollenDetailPage: React.FC = () => {
           </Button>
           <h1 className="text-3xl font-bold">{pollen.species}</h1>
           <p className="text-xl text-muted-foreground italic">{pollen.latinName}</p>
+          {pollen.arabicName && (
+            <p className="text-lg text-muted-foreground font-semibold" dir="rtl">{pollen.arabicName}</p>
+          )}
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -89,6 +93,11 @@ const PollenDetailPage: React.FC = () => {
                 <Button variant="destructive" onClick={handleDelete}>Delete</Button>
               </div>
             </Card>
+            
+            {/* Add UAE Map */}
+            <div className="mt-6">
+              <UAEMap region={pollen.plantOrigin} className="w-full" />
+            </div>
           </div>
           
           {/* Right column - Details */}
@@ -110,6 +119,12 @@ const PollenDetailPage: React.FC = () => {
                             <dt className="text-sm text-muted-foreground">Latin Name</dt>
                             <dd className="font-medium">{pollen.latinName}</dd>
                           </div>
+                          {pollen.arabicName && (
+                            <div className="flex flex-col">
+                              <dt className="text-sm text-muted-foreground">Arabic Name</dt>
+                              <dd className="font-medium" dir="rtl">{pollen.arabicName}</dd>
+                            </div>
+                          )}
                           <div className="flex flex-col">
                             <dt className="text-sm text-muted-foreground">Species</dt>
                             <dd className="font-medium">{pollen.species}</dd>
