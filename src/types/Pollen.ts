@@ -14,6 +14,8 @@ export interface Pollen {
   aperture: string;
   morphType: string;
   pattern: string;
+  shape?: string; // Added shape field
+  plantInfo?: string; // Added plantInfo field
   images: string[];
   createdAt: Date;
   featured?: boolean;
@@ -36,6 +38,8 @@ export const samplePollens: Pollen[] = [
     aperture: 'Tricolporate',
     morphType: 'Prolate spheroidal',
     pattern: 'Echinate',
+    shape: 'Spherical',
+    plantInfo: 'Sunflowers are annual plants with large flower heads that produce edible seeds. They are native to North America and are now cultivated globally.',
     images: ['https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9'],
     createdAt: new Date('2023-01-15'),
     featured: true

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { usePollen } from '@/context/PollenContext';
@@ -8,14 +9,16 @@ import { ArrowLeft, Edit, ZoomIn, ZoomOut, Images } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { Textarea } from '@/components/ui/textarea';
 import UAEMap from '@/components/map/UAEMap';
 
 const PollenDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getPollenById, deletePollen } = usePollen();
+  const { getPollenById, deletePollen, updatePollen } = usePollen();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [plantInfo, setPlantInfo] = useState('');
   
   const pollen = getPollenById(id || '');
   
@@ -50,6 +53,13 @@ const PollenDetailPage: React.FC = () => {
   
   const handleImageSelect = (index: number) => {
     setActiveImageIndex(index);
+  };
+
+  const handlePlantInfoChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setPlantInfo(e.target.value);
+    
+    // Update the pollen object with the new plant info
+    updatePollen(pollen.id, { plantInfo: e.target.value });
   };
 
   return (
@@ -216,6 +226,17 @@ const PollenDetailPage: React.FC = () => {
                         </dl>
                       </div>
                     </div>
+                    
+                    {/* Plant Information Section */}
+                    <div className="mt-6 border-t pt-6">
+                      <h2 className="text-lg font-medium mb-4">Plant Information</h2>
+                      <Textarea 
+                        placeholder="Add notes or information about this plant species here..."
+                        className="min-h-[120px] w-full"
+                        value={pollen.plantInfo || plantInfo}
+                        onChange={handlePlantInfoChange}
+                      />
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -223,12 +244,12 @@ const PollenDetailPage: React.FC = () => {
               <TabsContent value="morphology">
                 <Card className="bg-card/80 backdrop-blur-sm border-muted">
                   <CardContent className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div>
                         <h2 className="text-lg font-medium mb-4">Morphological Features</h2>
                         <dl className="space-y-2">
                           <div className="flex flex-col">
-                            <dt className="text-sm text-muted-foreground">Dispersal</dt>
+                            <dt className="text-sm text-muted-foreground">Pollen Description</dt>
                             <dd className="font-medium">{pollen.dispersal}</dd>
                           </div>
                           <div className="flex flex-col">
@@ -242,12 +263,22 @@ const PollenDetailPage: React.FC = () => {
                         <h2 className="text-lg font-medium mb-4">Structural Information</h2>
                         <dl className="space-y-2">
                           <div className="flex flex-col">
-                            <dt className="text-sm text-muted-foreground">Morph Type</dt>
+                            <dt className="text-sm text-muted-foreground">Ornamentation</dt>
                             <dd className="font-medium">{pollen.morphType}</dd>
                           </div>
                           <div className="flex flex-col">
-                            <dt className="text-sm text-muted-foreground">Pattern</dt>
+                            <dt className="text-sm text-muted-foreground">Dimension</dt>
                             <dd className="font-medium">{pollen.pattern}</dd>
+                          </div>
+                        </dl>
+                      </div>
+                      
+                      <div>
+                        <h2 className="text-lg font-medium mb-4">Shape</h2>
+                        <dl className="space-y-2">
+                          <div className="flex flex-col">
+                            <dt className="text-sm text-muted-foreground">Shape Description</dt>
+                            <dd className="font-medium">{pollen.shape || "Not specified"}</dd>
                           </div>
                         </dl>
                       </div>

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
@@ -5,6 +6,7 @@ import { usePollen } from '@/context/PollenContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Plus, Image, Trash2 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
@@ -29,13 +31,16 @@ const PollenFormPage: React.FC = () => {
     aperture: existingPollen?.aperture || '',
     morphType: existingPollen?.morphType || '',
     pattern: existingPollen?.pattern || '',
+    shape: existingPollen?.shape || '',
+    plantInfo: existingPollen?.plantInfo || '',
     featured: existingPollen?.featured || false
   });
   
   const [images, setImages] = useState<string[]>(existingPollen?.images || []);
   
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
     
     setForm(prev => ({
       ...prev,
@@ -81,6 +86,8 @@ const PollenFormPage: React.FC = () => {
         aperture: form.aperture,
         morphType: form.morphType,
         pattern: form.pattern,
+        shape: form.shape,
+        plantInfo: form.plantInfo,
         images,
         featured: form.featured
       };
@@ -187,6 +194,18 @@ const PollenFormPage: React.FC = () => {
                     />
                   </div>
                   
+                  <div className="space-y-2">
+                    <Label htmlFor="plantInfo">Plant Information</Label>
+                    <Textarea
+                      id="plantInfo"
+                      name="plantInfo"
+                      value={form.plantInfo}
+                      onChange={handleChange}
+                      placeholder="Add details about this plant species..."
+                      className="min-h-[100px]"
+                    />
+                  </div>
+                  
                   <div className="flex items-center space-x-2">
                     <input
                       type="checkbox"
@@ -234,7 +253,7 @@ const PollenFormPage: React.FC = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="dispersal">Dispersal *</Label>
+                    <Label htmlFor="dispersal">Pollen Description *</Label>
                     <Input
                       id="dispersal"
                       name="dispersal"
@@ -258,7 +277,7 @@ const PollenFormPage: React.FC = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="morphType">Morph Type *</Label>
+                    <Label htmlFor="morphType">Ornamentation *</Label>
                     <Input
                       id="morphType"
                       name="morphType"
@@ -270,7 +289,7 @@ const PollenFormPage: React.FC = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="pattern">Pattern *</Label>
+                    <Label htmlFor="pattern">Dimension *</Label>
                     <Input
                       id="pattern"
                       name="pattern"
@@ -278,6 +297,17 @@ const PollenFormPage: React.FC = () => {
                       onChange={handleChange}
                       placeholder="e.g., Echinate"
                       required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="shape">Shape</Label>
+                    <Input
+                      id="shape"
+                      name="shape"
+                      value={form.shape}
+                      onChange={handleChange}
+                      placeholder="e.g., Spherical"
                     />
                   </div>
                 </div>
