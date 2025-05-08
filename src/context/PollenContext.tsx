@@ -31,14 +31,15 @@ export const PollenProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setIsLoading(true);
         const dbPollens = await loadPollens();
         
-        if (dbPollens && dbPollens.length > 0) {
+        // Add type checking for dbPollens array
+        if (dbPollens && Array.isArray(dbPollens) && dbPollens.length > 0) {
           // Convert all date strings back to Date objects
           const formattedPollens = dbPollens.map(pollen => ({
             ...pollen,
             createdAt: new Date(pollen.createdAt)
           }));
           
-          setPollens(formattedPollens);
+          setPollens(formattedPollens as Pollen[]);
         } else {
           // If no pollens in IndexedDB, use sample data and save it
           // Also process any images in sample data
@@ -148,7 +149,8 @@ export const PollenProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       if (id.startsWith('http')) {
         return id;
       }
-      return await getImage(id);
+      const imageData = await getImage(id);
+      return imageData as string | null;
     } catch (error) {
       console.error('Error getting image:', error);
       return null;

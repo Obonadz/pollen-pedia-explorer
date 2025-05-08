@@ -32,7 +32,7 @@ export const initDB = (): Promise<IDBDatabase> => {
 };
 
 // Save pollen data
-export const savePollens = async (pollens) => {
+export const savePollens = async (pollens: any[]) => {
   const db = await initDB();
   const transaction = db.transaction(POLLEN_STORE, 'readwrite');
   const store = transaction.objectStore(POLLEN_STORE);
@@ -45,14 +45,14 @@ export const savePollens = async (pollens) => {
     store.add(pollen);
   });
   
-  return new Promise((resolve, reject) => {
+  return new Promise<boolean>((resolve, reject) => {
     transaction.oncomplete = () => resolve(true);
     transaction.onerror = () => reject(transaction.error);
   });
 };
 
 // Load pollen data
-export const loadPollens = async () => {
+export const loadPollens = async (): Promise<any[]> => {
   const db = await initDB();
   const transaction = db.transaction(POLLEN_STORE, 'readonly');
   const store = transaction.objectStore(POLLEN_STORE);
@@ -65,7 +65,7 @@ export const loadPollens = async () => {
 };
 
 // Save an image to IndexedDB (as base64)
-export const saveImage = async (id: string, imageData: string) => {
+export const saveImage = async (id: string, imageData: string): Promise<boolean> => {
   const db = await initDB();
   const transaction = db.transaction(IMAGES_STORE, 'readwrite');
   const store = transaction.objectStore(IMAGES_STORE);
@@ -79,7 +79,7 @@ export const saveImage = async (id: string, imageData: string) => {
 };
 
 // Get an image from IndexedDB
-export const getImage = async (id: string) => {
+export const getImage = async (id: string): Promise<string | null> => {
   const db = await initDB();
   const transaction = db.transaction(IMAGES_STORE, 'readonly');
   const store = transaction.objectStore(IMAGES_STORE);
