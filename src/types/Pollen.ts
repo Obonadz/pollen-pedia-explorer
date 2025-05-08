@@ -2,7 +2,7 @@
 export interface Pollen {
   id: string;
   latinName: string;
-  arabicName?: string; // Added Arabic name field
+  arabicName?: string;
   species: string;
   family: string;
   plantOrigin: string;
@@ -14,8 +14,8 @@ export interface Pollen {
   aperture: string;
   morphType: string;
   pattern: string;
-  shape?: string; // Added shape field
-  plantInfo?: string; // Added plantInfo field
+  shape?: string;
+  plantInfo?: string;
   images: string[];
   createdAt: Date;
   featured?: boolean;

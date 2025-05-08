@@ -10,6 +10,7 @@ import PollenDetailPage from "./pages/PollenDetailPage";
 import PollenFormPage from "./pages/PollenFormPage";
 import NotFound from "./pages/NotFound";
 import { PollenProvider } from "./context/PollenContext";
+import AppLoader from "./components/layout/AppLoader";
 
 const queryClient = new QueryClient();
 
@@ -20,14 +21,16 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/database" element={<DatabasePage />} />
-            <Route path="/pollen/:id" element={<PollenDetailPage />} />
-            <Route path="/add" element={<PollenFormPage />} />
-            <Route path="/edit/:id" element={<PollenFormPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AppLoader>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/database" element={<DatabasePage />} />
+              <Route path="/pollen/:id" element={<PollenDetailPage />} />
+              <Route path="/add" element={<PollenFormPage />} />
+              <Route path="/edit/:id" element={<PollenFormPage />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AppLoader>
         </BrowserRouter>
       </PollenProvider>
     </TooltipProvider>
