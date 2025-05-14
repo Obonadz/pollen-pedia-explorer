@@ -23,8 +23,9 @@ export const PollenProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [pollens, setPollens] = useState<Pollen[]>([]);
   const [filter, setFilter] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [dbInitialized, setDbInitialized] = useState(false);
   
-  // Load pollens from IndexedDB
+  // Load pollens from IndexedDB on initial mount
   useEffect(() => {
     const fetchPollens = async () => {
       try {
@@ -33,6 +34,7 @@ export const PollenProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         
         // Add type checking for dbPollens array
         if (dbPollens && Array.isArray(dbPollens) && dbPollens.length > 0) {
+          console.log("Found existing pollens in IndexedDB:", dbPollens.length);
           // Convert all date strings back to Date objects
           const formattedPollens = dbPollens.map(pollen => ({
             ...pollen,
@@ -41,6 +43,7 @@ export const PollenProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           
           setPollens(formattedPollens as Pollen[]);
         } else {
+          console.log("No pollens found in IndexedDB, loading sample data");
           // If no pollens in IndexedDB, use sample data and save it
           // Also process any images in sample data
           const processedSamples = await Promise.all(samplePollens.map(async (pollen) => {
@@ -48,7 +51,9 @@ export const PollenProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             const processedImages = await Promise.all(pollen.images.map(async (imageUrl, index) => {
               try {
                 const imageId = `${pollen.id}-image-${index}`;
+                console.log(`Converting sample image to base64: ${imageUrl}`);
                 const base64 = await imageUrlToBase64(imageUrl);
+                console.log(`Saving image with ID: ${imageId}`);
                 await saveImage(imageId, base64);
                 return imageId;
               } catch (error) {
@@ -64,8 +69,11 @@ export const PollenProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           }));
           
           setPollens(processedSamples);
-          savePollens(processedSamples);
+          console.log("Saving processed sample pollens to IndexedDB");
+          await savePollens(processedSamples);
         }
+        
+        setDbInitialized(true);
       } catch (error) {
         console.error('Error loading pollens from IndexedDB:', error);
         setPollens(samplePollens);
@@ -77,12 +85,21 @@ export const PollenProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     fetchPollens();
   }, []);
   
-  // Save pollens to IndexedDB whenever they change
+  // Save pollens to IndexedDB whenever they change (but only after initial load)
   useEffect(() => {
-    if (!isLoading && pollens.length > 0) {
-      savePollens(pollens);
-    }
-  }, [pollens, isLoading]);
+    const persistData = async () => {
+      if (dbInitialized && !isLoading && pollens.length > 0) {
+        console.log(`Persisting ${pollens.length} pollens to IndexedDB`);
+        try {
+          await savePollens(pollens);
+        } catch (error) {
+          console.error('Failed to save pollens to IndexedDB:', error);
+        }
+      }
+    };
+    
+    persistData();
+  }, [pollens, dbInitialized, isLoading]);
   
   const addPollen = async (newPollen: Omit<Pollen, 'id' | 'createdAt'>) => {
     const pollen: Pollen = {
@@ -91,7 +108,7 @@ export const PollenProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       createdAt: new Date(),
     };
     
-    setPollens([...pollens, pollen]);
+    setPollens(prev => [...prev, pollen]);
     toast({
       title: "Success",
       description: `${pollen.latinName} has been added to the database.`,
@@ -129,7 +146,12 @@ export const PollenProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     try {
       const imageId = `image-${Date.now()}`;
       const base64Data = await fileToBase64(file);
-      await saveImage(imageId, base64Data);
+      const success = await saveImage(imageId, base64Data);
+      
+      if (!success) {
+        throw new Error("Failed to save image to IndexedDB");
+      }
+      
       return imageId;
     } catch (error) {
       console.error('Error saving image:', error);
@@ -150,7 +172,7 @@ export const PollenProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         return id;
       }
       const imageData = await getImage(id);
-      return imageData as string | null;
+      return imageData;
     } catch (error) {
       console.error('Error getting image:', error);
       return null;

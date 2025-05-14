@@ -15,10 +15,11 @@ export const initDB = (): Promise<IDBDatabase> => {
     request.onupgradeneeded = (event) => {
       const db = request.result;
       
-      // Create pollen store
+      // Create pollen store with indexes
       if (!db.objectStoreNames.contains(POLLEN_STORE)) {
         const pollenStore = db.createObjectStore(POLLEN_STORE, { keyPath: 'id' });
         pollenStore.createIndex('latinName', 'latinName', { unique: false });
+        pollenStore.createIndex('createdAt', 'createdAt', { unique: false });
       }
       
       // Create images store
@@ -32,63 +33,125 @@ export const initDB = (): Promise<IDBDatabase> => {
 };
 
 // Save pollen data
-export const savePollens = async (pollens: any[]) => {
-  const db = await initDB();
-  const transaction = db.transaction(POLLEN_STORE, 'readwrite');
-  const store = transaction.objectStore(POLLEN_STORE);
-  
-  // Clear existing data
-  store.clear();
-  
-  // Add each pollen
-  pollens.forEach(pollen => {
-    store.add(pollen);
-  });
-  
-  return new Promise<boolean>((resolve, reject) => {
-    transaction.oncomplete = () => resolve(true);
-    transaction.onerror = () => reject(transaction.error);
-  });
+export const savePollens = async (pollens: any[]): Promise<boolean> => {
+  try {
+    const db = await initDB();
+    const transaction = db.transaction(POLLEN_STORE, 'readwrite');
+    const store = transaction.objectStore(POLLEN_STORE);
+    
+    // Clear existing data
+    store.clear();
+    
+    // Process each pollen and ensure proper date format
+    const processedPollens = pollens.map(pollen => ({
+      ...pollen,
+      createdAt: pollen.createdAt instanceof Date 
+        ? pollen.createdAt.toISOString() 
+        : pollen.createdAt
+    }));
+    
+    // Add each pollen
+    for (const pollen of processedPollens) {
+      store.put(pollen);
+    }
+    
+    return new Promise<boolean>((resolve, reject) => {
+      transaction.oncomplete = () => {
+        console.log(`Successfully saved ${pollens.length} pollen entries to IndexedDB`);
+        resolve(true);
+      };
+      transaction.onerror = () => {
+        console.error("Error saving pollens:", transaction.error);
+        reject(transaction.error);
+      };
+    });
+  } catch (error) {
+    console.error("Critical error saving pollens:", error);
+    return false;
+  }
 };
 
 // Load pollen data
 export const loadPollens = async (): Promise<any[]> => {
-  const db = await initDB();
-  const transaction = db.transaction(POLLEN_STORE, 'readonly');
-  const store = transaction.objectStore(POLLEN_STORE);
-  const request = store.getAll();
-  
-  return new Promise((resolve, reject) => {
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
+  try {
+    const db = await initDB();
+    const transaction = db.transaction(POLLEN_STORE, 'readonly');
+    const store = transaction.objectStore(POLLEN_STORE);
+    const request = store.getAll();
+    
+    return new Promise((resolve, reject) => {
+      request.onsuccess = () => {
+        console.log(`Successfully loaded ${request.result.length} pollen entries from IndexedDB`);
+        resolve(request.result);
+      };
+      request.onerror = () => {
+        console.error("Error loading pollens:", request.error);
+        reject(request.error);
+      };
+    });
+  } catch (error) {
+    console.error("Critical error loading pollens:", error);
+    return [];
+  }
 };
 
 // Save an image to IndexedDB (as base64)
 export const saveImage = async (id: string, imageData: string): Promise<boolean> => {
-  const db = await initDB();
-  const transaction = db.transaction(IMAGES_STORE, 'readwrite');
-  const store = transaction.objectStore(IMAGES_STORE);
-  
-  store.put({ id, data: imageData });
-  
-  return new Promise((resolve, reject) => {
-    transaction.oncomplete = () => resolve(true);
-    transaction.onerror = () => reject(transaction.error);
-  });
+  try {
+    const db = await initDB();
+    const transaction = db.transaction(IMAGES_STORE, 'readwrite');
+    const store = transaction.objectStore(IMAGES_STORE);
+    
+    store.put({ id, data: imageData });
+    
+    return new Promise((resolve, reject) => {
+      transaction.oncomplete = () => {
+        console.log(`Image ${id} saved successfully to IndexedDB`);
+        resolve(true);
+      };
+      transaction.onerror = () => {
+        console.error("Error saving image:", transaction.error);
+        reject(transaction.error);
+      };
+    });
+  } catch (error) {
+    console.error("Critical error saving image:", error);
+    return false;
+  }
 };
 
 // Get an image from IndexedDB
 export const getImage = async (id: string): Promise<string | null> => {
-  const db = await initDB();
-  const transaction = db.transaction(IMAGES_STORE, 'readonly');
-  const store = transaction.objectStore(IMAGES_STORE);
-  const request = store.get(id);
-  
-  return new Promise((resolve, reject) => {
-    request.onsuccess = () => resolve(request.result ? request.result.data : null);
-    request.onerror = () => reject(request.error);
-  });
+  try {
+    // If the id seems to be a URL, return it as is
+    if (id.startsWith('http')) {
+      return id;
+    }
+    
+    const db = await initDB();
+    const transaction = db.transaction(IMAGES_STORE, 'readonly');
+    const store = transaction.objectStore(IMAGES_STORE);
+    const request = store.get(id);
+    
+    return new Promise((resolve, reject) => {
+      request.onsuccess = () => {
+        if (request.result) {
+          console.log(`Image ${id} retrieved successfully from IndexedDB`);
+          resolve(request.result.data);
+        } else {
+          console.warn(`Image ${id} not found in IndexedDB`);
+          resolve(null);
+        }
+      };
+      request.onerror = () => {
+        console.error("Error retrieving image:", request.error);
+        reject(request.error);
+      };
+    });
+  } catch (error) {
+    console.error("Critical error getting image:", error);
+    return null;
+  }
 };
 
 // Convert a file to base64
