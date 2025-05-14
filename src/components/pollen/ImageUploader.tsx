@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { Upload, X } from 'lucide-react';
@@ -23,19 +23,12 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
   const { saveImageToDB, getImageFromDB } = usePollen();
 
   // Load existing image if provided
-  useEffect(() => {
+  React.useEffect(() => {
     if (existingImage) {
       const loadExistingImage = async () => {
-        setIsLoading(true);
-        try {
-          const imageData = await getImageFromDB(existingImage);
-          if (imageData) {
-            setPreview(imageData);
-          }
-        } catch (error) {
-          console.error("Error loading existing image:", error);
-        } finally {
-          setIsLoading(false);
+        const imageData = await getImageFromDB(existingImage);
+        if (imageData) {
+          setPreview(imageData);
         }
       };
       loadExistingImage();
@@ -77,15 +70,8 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 
       // Save to IndexedDB
       const imageId = await saveImageToDB(file);
-      console.log(`Image saved with ID: ${imageId}`);
       onImageAdded(imageId);
-      
-      toast({
-        title: "Image Uploaded",
-        description: "Image successfully saved to database",
-      });
     } catch (error) {
-      console.error("Image upload error:", error);
       toast({
         title: "Upload Failed",
         description: "There was an error uploading your image.",

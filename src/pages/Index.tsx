@@ -1,13 +1,8 @@
 
-import React from 'react';
 import HomePage from "./HomePage";
 
-const Index: React.FC = () => {
-  return (
-    <div className="pollen-app">
-      <HomePage />
-    </div>
-  );
+const Index = () => {
+  return <HomePage />;
 };
 
 export default Index;
