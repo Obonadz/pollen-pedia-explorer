@@ -7,9 +7,15 @@ interface ImageDisplayProps {
   imageId: string;
   alt: string;
   className?: string;
+  onError?: () => void;
 }
 
-const ImageDisplay: React.FC<ImageDisplayProps> = ({ imageId, alt, className = '' }) => {
+const ImageDisplay: React.FC<ImageDisplayProps> = ({ 
+  imageId, 
+  alt, 
+  className = '',
+  onError
+}) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -25,13 +31,45 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({ imageId, alt, className = '
         if (data) {
           setImageUrl(data);
           console.log(`Image ${imageId} loaded successfully`);
+          
+          // Cache the image in localStorage as a backup
+          try {
+            if (typeof window !== 'undefined') {
+              localStorage.setItem(`image-${imageId}`, data);
+              console.log(`Image ${imageId} cached in localStorage`);
+            }
+          } catch (cacheError) {
+            console.warn(`Failed to cache image in localStorage: ${cacheError}`);
+          }
         } else {
+          // Try to load from localStorage if the DB fails
+          if (typeof window !== 'undefined') {
+            const cachedImage = localStorage.getItem(`image-${imageId}`);
+            if (cachedImage) {
+              setImageUrl(cachedImage);
+              console.log(`Image ${imageId} loaded from localStorage cache`);
+              return;
+            }
+          }
           console.warn(`No data found for image: ${imageId}`);
           setError(true);
+          if (onError) onError();
         }
       } catch (e) {
         console.error(`Failed to load image ${imageId}:`, e);
+        
+        // Try to load from localStorage if the DB fails
+        if (typeof window !== 'undefined') {
+          const cachedImage = localStorage.getItem(`image-${imageId}`);
+          if (cachedImage) {
+            setImageUrl(cachedImage);
+            console.log(`Image ${imageId} loaded from localStorage cache after error`);
+            return;
+          }
+        }
+        
         setError(true);
+        if (onError) onError();
       } finally {
         setLoading(false);
       }
@@ -43,7 +81,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({ imageId, alt, className = '
       setLoading(false);
       setError(true);
     }
-  }, [imageId, getImageFromDB]);
+  }, [imageId, getImageFromDB, onError]);
 
   if (loading) {
     return <Skeleton className={`w-full h-40 ${className}`} />;
@@ -66,6 +104,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({ imageId, alt, className = '
       onError={(e) => {
         console.error(`Error loading image: ${imageId}`);
         e.currentTarget.src = '/placeholder.svg';
+        if (onError) onError();
       }}
     />
   );

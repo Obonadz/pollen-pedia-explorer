@@ -7,23 +7,87 @@
   <title>PollenPedia Explorer - Offline Version</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <style>
+    /* Color variables to match the React app's theme */
+    :root {
+      --background: #fcfcfc;
+      --foreground: #171917;
+      --card: #ffffff;
+      --card-foreground: #171917;
+      --primary: #2d8a4a;
+      --primary-foreground: #f8fcf8;
+      --secondary: #f5b82d;
+      --secondary-foreground: #17130d;
+      --muted: #f0f2f0;
+      --muted-foreground: #687268;
+      --accent: #fff7ec;
+      --accent-foreground: #170f0d;
+      --border: #e3e8e3;
+      --input: #e3e8e3;
+      --ring: #2d8a4a;
+      --radius: 0.5rem;
+    }
+    
+    .dark {
+      --background: #06070c;
+      --foreground: #f2f2f2;
+      --card: #0d130f;
+      --card-foreground: #f2f2f2;
+      --primary: #2d8a4a;
+      --primary-foreground: #f8fcf8;
+      --secondary: #9d7c25;
+      --secondary-foreground: #f2f2f2;
+      --muted: #182518;
+      --muted-foreground: #a6a6a6;
+      --accent: #182518;
+      --accent-foreground: #f2f2f2;
+      --border: #233023;
+      --input: #233023;
+      --ring: #2d8a4a;
+    }
+    
     /* Custom styles */
+    body {
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+    
+    .pollen-card {
+      background-color: var(--card);
+      color: var(--card-foreground);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: all 0.2s ease-in-out;
+    }
+    
     .pollen-card:hover {
       transform: translateY(-3px);
       box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
     }
-    .bg-nature-50 { background-color: #f0fdf4; }
-    .bg-nature-100 { background-color: #dcfce7; }
-    .bg-nature-600 { background-color: #16a34a; }
-    .bg-nature-700 { background-color: #15803d; }
-    .bg-nature-800 { background-color: #166534; }
-    .bg-nature-900 { background-color: #14532d; }
-    .text-nature-600 { color: #16a34a; }
-    .text-nature-800 { color: #166534; }
-    .text-nature-900 { color: #14532d; }
-    .border-nature-600 { border-color: #16a34a; }
-    .hover\:bg-nature-700:hover { background-color: #15803d; }
-
+    
+    button.primary {
+      background-color: var(--primary);
+      color: var(--primary-foreground);
+    }
+    
+    button.primary:hover {
+      background-color: #24703c;
+    }
+    
+    button.secondary {
+      background-color: var(--secondary);
+      color: var(--secondary-foreground);
+    }
+    
+    button.secondary:hover {
+      background-color: #e4a91f;
+    }
+    
+    .rounded-md {
+      border-radius: var(--radius);
+    }
+    
     .image-gallery {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -35,7 +99,7 @@
       aspect-ratio: 1;
       object-fit: cover;
       border-radius: 0.5rem;
-      border: 1px solid #e5e7eb;
+      border: 1px solid var(--border);
       transition: all 0.2s ease-in-out;
     }
 
@@ -49,6 +113,35 @@
       direction: rtl;
       text-align: right;
     }
+    
+    /* Force data persistence notification */
+    #persistence-status {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      padding: 8px 12px;
+      border-radius: var(--radius);
+      background-color: var(--primary);
+      color: var(--primary-foreground);
+      font-size: 14px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    #persistence-status.visible {
+      opacity: 1;
+    }
+    
+    /* Toast improvements */
+    #toast {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      border-radius: var(--radius);
+    }
   </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -58,7 +151,7 @@
       <div class="container mx-auto px-4 py-3">
         <div class="flex justify-between items-center">
           <div class="flex items-center">
-            <h1 class="text-xl font-semibold text-nature-800">PollenPedia Explorer</h1>
+            <h1 class="text-xl font-semibold text-green-800">PollenPedia Explorer</h1>
           </div>
           <div class="flex items-center">
             <div class="relative">
@@ -66,13 +159,13 @@
                 id="search-input"
                 type="text" 
                 placeholder="Search pollens..." 
-                class="px-4 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-nature-600"
+                class="px-4 py-2 pr-8 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
               >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute right-2 top-2.5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
               </svg>
             </div>
-            <button id="add-pollen-btn" class="ml-4 bg-nature-600 hover:bg-nature-700 text-white px-4 py-2 rounded">
+            <button id="add-pollen-btn" class="ml-4 primary px-4 py-2 rounded">
               Add New Pollen
             </button>
           </div>
@@ -85,18 +178,18 @@
       <!-- View Containers -->
       <div id="home-view" class="view active">
         <!-- Hero Section -->
-        <section class="bg-gradient-to-r from-nature-100 to-nature-50 rounded-lg p-8 mb-12">
+        <section class="bg-gradient-to-r from-green-100 to-green-50 rounded-lg p-8 mb-12">
           <div class="max-w-3xl">
-            <h1 class="text-4xl font-bold text-nature-900 mb-4">PollenPedia Explorer</h1>
-            <p class="text-xl text-nature-800 mb-6">
+            <h1 class="text-4xl font-bold text-green-900 mb-4">PollenPedia Explorer</h1>
+            <p class="text-xl text-green-800 mb-6">
               The comprehensive database for pollen identification and classification.
               Explore detailed information, high-quality images, and scientific data.
             </p>
             <div class="flex flex-wrap gap-4">
-              <button id="explore-db-btn" class="bg-nature-600 hover:bg-nature-700 text-white px-6 py-3 rounded">
+              <button id="explore-db-btn" class="primary px-6 py-3 rounded">
                 Explore Database
               </button>
-              <button id="add-new-pollen-btn" class="border border-nature-600 text-nature-600 px-6 py-3 rounded bg-white">
+              <button id="add-new-pollen-btn" class="border border-green-600 text-green-600 px-6 py-3 rounded bg-white">
                 Add New Pollen
               </button>
             </div>
@@ -138,7 +231,7 @@
               <option value="recent">Sort by Most Recent</option>
             </select>
             
-            <button id="database-add-btn" class="bg-nature-600 hover:bg-nature-700 text-white px-4 py-2 rounded">
+            <button id="database-add-btn" class="primary px-4 py-2 rounded">
               Add New Pollen
             </button>
           </div>
@@ -155,7 +248,7 @@
 
       <div id="detail-view" class="view hidden">
         <div class="mb-6 flex justify-between items-center">
-          <button id="back-btn" class="flex items-center text-nature-600">
+          <button id="back-btn" class="flex items-center text-green-600">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
             </svg>
@@ -174,7 +267,7 @@
 
       <div id="form-view" class="view hidden">
         <div class="mb-6">
-          <button id="form-back-btn" class="flex items-center text-nature-600">
+          <button id="form-back-btn" class="flex items-center text-green-600">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
             </svg>
@@ -199,7 +292,7 @@
                     type="text" 
                     id="latinName" 
                     required
-                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-nature-600"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
                   >
                 </div>
                 
@@ -209,7 +302,7 @@
                     type="text" 
                     id="arabicName"
                     dir="rtl"
-                    class="arabic-text w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-nature-600"
+                    class="arabic-text w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
                   >
                 </div>
               </div>
@@ -221,7 +314,7 @@
                     type="text" 
                     id="family" 
                     required
-                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-nature-600"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
                   >
                 </div>
                 
@@ -231,7 +324,7 @@
                     type="text" 
                     id="species" 
                     required
-                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-nature-600"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
                   >
                 </div>
               </div>
@@ -242,7 +335,7 @@
                   type="text" 
                   id="plantOrigin" 
                   required
-                  class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-nature-600"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
                 >
               </div>
             </div>
@@ -257,7 +350,7 @@
                   id="description" 
                   rows="4" 
                   required
-                  class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-nature-600"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
                 ></textarea>
               </div>
               
@@ -267,7 +360,7 @@
                   <input 
                     type="text" 
                     id="bloomingSeason" 
-                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-nature-600"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
                   >
                 </div>
                 
@@ -278,7 +371,7 @@
                     id="averageSize" 
                     min="0" 
                     step="0.1"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-nature-600"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
                   >
                 </div>
               </div>
@@ -288,7 +381,7 @@
                 <input 
                   type="text" 
                   id="shape" 
-                  class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-nature-600"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
                 >
               </div>
               
@@ -296,7 +389,7 @@
                 <input 
                   type="checkbox" 
                   id="allergenic" 
-                  class="h-4 w-4 text-nature-600 focus:ring-nature-600 border-gray-300 rounded"
+                  class="h-4 w-4 text-green-600 focus:ring-green-600 border-gray-300 rounded"
                 >
                 <label for="allergenic" class="ml-2 block text-sm text-gray-700">Allergenic</label>
               </div>
@@ -305,7 +398,7 @@
                 <input 
                   type="checkbox" 
                   id="featured" 
-                  class="h-4 w-4 text-nature-600 focus:ring-nature-600 border-gray-300 rounded"
+                  class="h-4 w-4 text-green-600 focus:ring-green-600 border-gray-300 rounded"
                 >
                 <label for="featured" class="ml-2 block text-sm text-gray-700">Featured</label>
               </div>
@@ -352,7 +445,7 @@
               </button>
               <button 
                 type="submit"
-                class="bg-nature-600 hover:bg-nature-700 text-white px-6 py-2 rounded"
+                class="primary px-6 py-2 rounded"
               >
                 Save Pollen
               </button>
@@ -381,6 +474,14 @@
         <p id="toast-message" class="text-sm text-gray-500"></p>
       </div>
     </div>
+
+    <!-- Persistence Status Indicator -->
+    <div id="persistence-status" class="hidden">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      </svg>
+      <span id="persistence-message">Data saved locally</span>
+    </div>
   </div>
 
   <script>
@@ -403,28 +504,81 @@
           this.loadData();
           this.setupEventListeners();
           this.renderPollens();
+          
+          // Check localStorage compatibility
+          this.checkStorage();
+        },
+        
+        // Check if localStorage is available and working
+        checkStorage: function() {
+          try {
+            localStorage.setItem('test', 'test');
+            localStorage.removeItem('test');
+            console.log('localStorage is available and working');
+          } catch (e) {
+            this.showToast('error', 'Storage Error', 'Unable to access local storage. Data will not persist between sessions.');
+            console.error('localStorage error:', e);
+          }
+        },
+        
+        // Show persistence status
+        showPersistenceStatus: function(message) {
+          const statusEl = document.getElementById('persistence-status');
+          const messageEl = document.getElementById('persistence-message');
+          
+          messageEl.textContent = message || 'Data saved locally';
+          statusEl.classList.add('visible');
+          statusEl.classList.remove('hidden');
+          
+          setTimeout(() => {
+            statusEl.classList.remove('visible');
+            setTimeout(() => {
+              statusEl.classList.add('hidden');
+            }, 300);
+          }, 2000);
         },
         
         // Load data from localStorage
         loadData: function() {
-          // Load pollens
-          const savedPollens = localStorage.getItem('pollens');
-          if (savedPollens) {
-            this.pollens = JSON.parse(savedPollens);
-          } else {
-            // Load sample data if no existing data
+          try {
+            // Load pollens with backup handling
+            const savedPollens = localStorage.getItem('pollens');
+            if (savedPollens) {
+              try {
+                this.pollens = JSON.parse(savedPollens);
+                console.log(`Loaded ${this.pollens.length} pollen entries from localStorage`);
+              } catch (parseError) {
+                console.error('Error parsing pollens from localStorage:', parseError);
+                this.pollens = [];
+              }
+            } 
+            
+            if (!savedPollens || this.pollens.length === 0) {
+              // Load sample data if no existing data
+              this.loadSampleData();
+            }
+            
+            // Load images with backup handling
+            const savedImages = localStorage.getItem('pollenImages');
+            if (savedImages) {
+              try {
+                this.images = JSON.parse(savedImages);
+                console.log(`Loaded ${Object.keys(this.images).length} images from localStorage`);
+              } catch (parseError) {
+                console.error('Error parsing images from localStorage:', parseError);
+                this.images = {};
+              }
+            }
+          } catch (e) {
+            console.error('Error loading data from localStorage:', e);
+            // Load sample data as fallback
             this.loadSampleData();
-          }
-          
-          // Load images
-          const savedImages = localStorage.getItem('pollenImages');
-          if (savedImages) {
-            this.images = JSON.parse(savedImages);
           }
         },
         
         // Load sample data
         loadSampleData: function() {
+          console.log('Loading sample data');
           this.pollens = [
             {
               id: '1',
@@ -489,8 +643,32 @@
         
         // Save data to localStorage
         saveData: function() {
-          localStorage.setItem('pollens', JSON.stringify(this.pollens));
-          localStorage.setItem('pollenImages', JSON.stringify(this.images));
+          try {
+            localStorage.setItem('pollens', JSON.stringify(this.pollens));
+            localStorage.setItem('pollenImages', JSON.stringify(this.images));
+            console.log('Data saved to localStorage');
+            this.showPersistenceStatus('Data saved locally');
+          } catch (e) {
+            console.error('Error saving data to localStorage:', e);
+            this.showToast('error', 'Storage Error', 'Unable to save data locally. Your changes may not persist.');
+            
+            // Try to save with smaller chunks if the error is a quota error
+            if (e.name === 'QuotaExceededError') {
+              this.handleStorageQuotaExceeded();
+            }
+          }
+        },
+        
+        // Handle storage quota exceeded
+        handleStorageQuotaExceeded: function() {
+          // Try to save just the pollens without images
+          try {
+            localStorage.setItem('pollens', JSON.stringify(this.pollens));
+            console.log('Saved pollens data without images');
+            this.showToast('warning', 'Storage Warning', 'Your images couldn\'t be saved due to storage limits. Pollen data was saved.');
+          } catch (pollenError) {
+            console.error('Failed to save even the pollens data:', pollenError);
+          }
         },
         
         // Setup event listeners
@@ -533,6 +711,12 @@
           document.getElementById('image-upload').addEventListener('change', (e) => {
             this.handleImageUpload(e.target.files);
           });
+          
+          // Listen for window beforeunload to remind about data persistence
+          window.addEventListener('beforeunload', () => {
+            // No need to return anything, we just want to save data as a precaution
+            this.saveData();
+          });
         },
         
         // Show specific view
@@ -566,9 +750,10 @@
             featuredContainer.innerHTML = `
               <div class="col-span-full text-center p-8 bg-gray-100 rounded-lg">
                 <p class="text-gray-500 mb-2">No featured pollen types found</p>
-                <button class="bg-nature-600 text-white px-4 py-2 rounded">Add New Pollen</button>
+                <button class="primary px-4 py-2 rounded">Add New Pollen</button>
               </div>
             `;
+            featuredContainer.querySelector('button').addEventListener('click', () => this.showAddPollenForm());
           }
           
           // Recent pollens
@@ -587,9 +772,10 @@
             recentContainer.innerHTML = `
               <div class="col-span-full text-center p-8 bg-gray-100 rounded-lg">
                 <p class="text-gray-500 mb-2">No pollen types in database</p>
-                <button class="bg-nature-600 text-white px-4 py-2 rounded">Add New Pollen</button>
+                <button class="primary px-4 py-2 rounded">Add New Pollen</button>
               </div>
             `;
+            recentContainer.querySelector('button').addEventListener('click', () => this.showAddPollenForm());
           }
         },
         
@@ -615,7 +801,7 @@
                 <p class="text-gray-500 mb-6">
                   Add new pollen types to your database.
                 </p>
-                <button id="empty-add-btn" class="bg-nature-600 text-white px-4 py-2 rounded">Add New Pollen</button>
+                <button id="empty-add-btn" class="primary px-4 py-2 rounded">Add New Pollen</button>
               </div>
             `;
             
@@ -627,7 +813,7 @@
         // Create pollen card element
         createPollenCard: function(pollen) {
           const card = document.createElement('div');
-          card.className = 'bg-white rounded-lg shadow overflow-hidden transition-transform duration-200 pollen-card';
+          card.className = 'pollen-card shadow overflow-hidden transition-transform duration-200';
           card.dataset.id = pollen.id;
           
           // Get main image
@@ -645,7 +831,7 @@
               ${pollen.arabicName ? `<p class="text-sm text-gray-500 arabic-text">${pollen.arabicName}</p>` : ''}
               <p class="text-sm text-gray-500">${pollen.family}</p>
               <div class="mt-2 flex justify-between items-center">
-                <span class="text-sm bg-nature-100 text-nature-800 px-2 py-1 rounded">${pollen.species}</span>
+                <span class="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">${pollen.species}</span>
                 <span class="text-xs text-gray-500">${this.formatDate(pollen.createdAt)}</span>
               </div>
             </div>
@@ -723,7 +909,7 @@
                 <h2 class="text-xl font-semibold mb-3">Additional Information</h2>
                 <p class="text-sm text-gray-500">Added on ${this.formatDate(pollen.createdAt)}</p>
                 
-                ${pollen.featured ? '<p class="mt-2"><span class="text-sm bg-nature-100 text-nature-800 px-2 py-1 rounded-full">Featured Pollen</span></p>' : ''}
+                ${pollen.featured ? '<p class="mt-2"><span class="text-sm bg-green-100 text-green-800 px-2 py-1 rounded-full">Featured Pollen</span></p>' : ''}
               </div>
             </div>
           `;
@@ -906,6 +1092,14 @@
             // Save image
             this.images[imageId] = imageData;
             
+            // Also save individual image to localStorage for backup
+            try {
+              localStorage.setItem(`img-${imageId}`, imageData);
+              console.log(`Image ${imageId} saved separately in localStorage`);
+            } catch (e) {
+              console.warn(`Couldn't save individual image to localStorage: ${e.message}`);
+            }
+            
             // Add to pending images
             this.addImageToPreview(imageId, imageData);
             
@@ -913,6 +1107,9 @@
             document.getElementById('image-upload').value = '';
             
             this.showToast('success', 'Image Uploaded', 'Image successfully saved to database');
+            
+            // Save the updated images object
+            this.saveData();
           };
           reader.readAsDataURL(file);
         },
@@ -1021,8 +1218,26 @@
         
         // Get image URL
         getImageUrl: function(imageId) {
-          return this.images[imageId] || 
-            'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2U1ZTdlYiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiM5Y2EzYWYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
+          // Try to get from memory cache first
+          if (this.images[imageId]) {
+            return this.images[imageId];
+          }
+          
+          // Try to get from localStorage as backup
+          try {
+            const localImage = localStorage.getItem(`img-${imageId}`);
+            if (localImage) {
+              // Update our memory cache
+              this.images[imageId] = localImage;
+              console.log(`Restored image ${imageId} from individual localStorage backup`);
+              return localImage;
+            }
+          } catch (e) {
+            console.warn(`Failed to retrieve individual image from localStorage: ${e.message}`);
+          }
+          
+          // Fallback to placeholder
+          return 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2U1ZTdlYiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiM5Y2EzYWYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
         },
         
         // Format date
@@ -1049,6 +1264,7 @@
           // Set icon based on type
           if (type === 'success') {
             toast.classList.add('bg-white', 'border-l-4', 'border-green-500');
+            toast.classList.remove('border-red-500', 'border-yellow-500');
             toastIcon.innerHTML = `
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
@@ -1056,9 +1272,18 @@
             `;
           } else if (type === 'error') {
             toast.classList.add('bg-white', 'border-l-4', 'border-red-500');
+            toast.classList.remove('border-green-500', 'border-yellow-500');
             toastIcon.innerHTML = `
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+              </svg>
+            `;
+          } else if (type === 'warning') {
+            toast.classList.add('bg-white', 'border-l-4', 'border-yellow-500');
+            toast.classList.remove('border-green-500', 'border-red-500');
+            toastIcon.innerHTML = `
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
               </svg>
             `;
           }
@@ -1071,7 +1296,6 @@
             toast.classList.add('translate-y-20');
             setTimeout(() => {
               toast.classList.add('hidden');
-              toast.classList.remove('border-l-4', 'border-green-500', 'border-red-500');
             }, 300);
           }, 3000);
         }
@@ -1084,4 +1308,3 @@
 
 </body>
 </html>
-
